@@ -61,6 +61,8 @@ python test_vad_bypass.py
 - **Multiple Whisper models** support (tiny, base, small, medium, large)
 - **Error handling** with detailed traceback logging
 - **Memory management** with automatic cleanup
+- **Audit database** for storing audio chunks and transcriptions
+- **Real-time audit viewer** for analyzing audio-to-text mappings
 
 ### **🔧 Technical Features**
 - **Sample Rate:** 16kHz
@@ -148,7 +150,13 @@ curl http://localhost:8000/health
 3. Speak into microphone
 4. View real-time transcription
 
-### **3. Manual WebSocket Test**
+### **3. Audit Viewer Test**
+1. Open browser to: `http://localhost:8000/audit-viewer`
+2. View real-time audio chunks and their transcriptions
+3. Filter by session ID or view all recent data
+4. Play audio chunks to analyze transcription accuracy
+
+### **4. Manual WebSocket Test**
 ```bash
 # Start server
 python server.py
@@ -236,6 +244,9 @@ ws://localhost:8000/ws/audio
 GET /                    # Server info
 GET /health             # Health check
 GET /html               # Browser client
+GET /audit              # Get recent audit data
+GET /audit/{session_id} # Get audit data for specific session
+GET /audit-viewer       # Audit viewer web interface
 ```
 
 ### **Message Format**
@@ -284,6 +295,42 @@ pip install -r requirements.txt
 
 # Start server
 python server.py
+```
+
+## 🔍 **Audit Database**
+
+### **Audio Chunk & Transcription Storage**
+The server now includes a comprehensive audit system that stores:
+- **Raw audio chunks** (base64 encoded)
+- **Transcription results** from Whisper
+- **Timestamps** and session information
+- **Audio metadata** (size, duration, chunk ID)
+
+### **Audit Endpoints**
+- `GET /audit` - Get recent audit data across all sessions
+- `GET /audit/{session_id}` - Get audit data for a specific session
+- `GET /audit-viewer` - Web interface for viewing and analyzing audit data
+
+### **Audit Viewer Features**
+- **Real-time updates** with auto-refresh capability
+- **Audio playback** for each stored chunk
+- **Session filtering** to focus on specific recordings
+- **Transcription analysis** to understand word formation
+- **Metadata display** showing timing and audio properties
+
+### **Database Schema**
+```sql
+CREATE TABLE audio_audit (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    timestamp REAL NOT NULL,
+    audio_chunk_base64 TEXT NOT NULL,
+    audio_chunk_size INTEGER NOT NULL,
+    transcription TEXT,
+    is_final BOOLEAN DEFAULT FALSE,
+    chunk_duration_ms INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ## 📝 **Logs & Monitoring**
