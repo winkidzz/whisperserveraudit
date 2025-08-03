@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "imageName": "ishworksregistry.captain.ishworks.website/whispercaprover:latest",
+  "expose": [
+    {
+      "httpPort": 80,
+      "httpsPort": 443
+    }
+  ],
+  "environmentVariables": {
+    "WHISPER_MODEL": "small",
+    "HOST": "0.0.0.0",
+    "PORT": "80",
+    "LOG_LEVEL": "info",
+    "MAX_CONNECTIONS": "10",
+    "WHISPER_CACHE_DIR": "/app/cache"
+  },
+  "caproverOneClickApp": {
+    "displayName": "WhisperCapRover Server (Docker Hub)",
+    "description": "Real-time audio transcription server from Docker Hub",
+    "repository": {
+      "url": "https://gitlab.captain.ishworks.website/audio/whispercaprover.git",
+      "branch": "main"
+    },
+    "variables": [
+      {
+        "key": "WHISPER_MODEL",
+        "value": "small",
+        "description": "Whisper model size (tiny, base, small, medium, large)"
+      },
+      {
+        "key": "MAX_CONNECTIONS",
+        "value": "10",
+        "description": "Maximum concurrent WebSocket connections"
+      },
+      {
+        "key": "LOG_LEVEL",
+        "value": "info",
+        "description": "Logging level (debug, info, warning, error)"
+      }
+    ]
+  },
+  "notExposeAsWebApp": false,
+  "hasDefaultSubdomainSsl": true,
+  "containerHttpPort": "80",
+  "description": "Real-time audio transcription server using OpenAI Whisper from Docker Hub"
+} 

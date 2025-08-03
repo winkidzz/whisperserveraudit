@@ -1,0 +1,24 @@
+# Lightweight requirements for WhisperCapRover
+# Excludes heavy dependencies to reduce image size
+
+# Core Whisper functionality
+openai-whisper
+
+# Voice Activity Detection
+webrtcvad
+
+# Web framework
+fastapi
+uvicorn[standard]
+
+# WebSocket support
+websockets
+
+# Audio processing
+numpy
+sounddevice
+
+# CPU-only PyTorch (much smaller)
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.7.1+cpu
+torchaudio==2.7.1+cpu 

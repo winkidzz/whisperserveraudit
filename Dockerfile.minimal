@@ -1,0 +1,76 @@
+# Minimal Dockerfile for WhisperCapRover
+# Uses Alpine Linux and minimal dependencies
+
+# Stage 1: Build dependencies
+FROM python:3.11-alpine as builder
+
+# Install build dependencies
+RUN apk add --no-cache \
+    gcc \
+    g++ \
+    make \
+    musl-dev \
+    portaudio-dev \
+    python3-dev \
+    py3-pip \
+    && rm -rf /var/cache/apk/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements and install Python packages
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Stage 2: Runtime image
+FROM python:3.11-alpine as runtime
+
+# Install only runtime dependencies
+RUN apk add --no-cache \
+    portaudio \
+    ffmpeg \
+    libsndfile \
+    curl \
+    && rm -rf /var/cache/apk/*
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create a non-root user
+RUN adduser -D -s /bin/bash -u 1000 app
+
+# Set working directory
+WORKDIR /app
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/logs /app/models /app/cache && \
+    chown -R app:app /app
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV WHISPER_MODEL=base
+ENV HOST=0.0.0.0
+ENV PORT=80
+ENV MAX_CONNECTIONS=10
+ENV LOG_LEVEL=info
+ENV WHISPER_CACHE_DIR=/app/cache
+
+# Copy application code
+COPY --chown=app:app server.py .
+
+# Expose port
+EXPOSE 80
+
+# Health check for CapRover
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
+    CMD curl -f http://localhost:80/health || exit 1
+
+# Switch to non-root user
+USER app
+
+# Run the server (Whisper model will be downloaded on first run)
+CMD ["python", "server.py"] 

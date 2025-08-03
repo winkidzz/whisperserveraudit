@@ -1,0 +1,16 @@
+# Real-time WebSocket transcription with OpenAI Whisper and VAD
+openai-whisper
+webrtcvad
+
+# Web framework and WebSocket support
+fastapi
+uvicorn[standard]
+websockets
+
+# Audio processing and data handling
+numpy
+sounddevice
+
+# PyTorch for Whisper
+torch
+torchaudio 
